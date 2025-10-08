@@ -1,0 +1,22 @@
+def find_numbers(x):
+    results = []
+    k = 0
+    while 3 ** k <= x:
+        l = 0
+        while 3 ** k * 5 ** l <= x:
+            m = 0
+            while 3 ** k * 5 ** l * 7 ** m <= x:
+                val = 3 ** k * 5 ** l * 7 ** m
+                if val <= x:
+                    results.append(val)
+                m += 1
+            l += 1
+        k += 1
+    results = list(set(results))  # Удаляем дубликаты
+    results.sort()
+    return results
+
+x = int(input("Введите число x: "))
+numbers = find_numbers(x)
+print("Числа, удовлетворяющие условию:")
+print(*numbers)

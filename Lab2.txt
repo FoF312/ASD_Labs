@@ -1,0 +1,34 @@
+import re
+
+def check_round_brackets(expression):
+    stack = []
+    for char in expression:
+        if char == '(':
+            stack.append(char)
+        elif char == ')':
+            if not stack:
+                return False
+            stack.pop()
+    return len(stack) == 0
+
+def evaluate_expression(expr):
+    # Проверка круглых скобок
+    if not check_round_brackets(expr):
+        return 'Ошибка: Скобки расставлены неверно'
+
+    if not expr.endswith('='):
+        return 'Ошибка: Выражение должно оканчиваться на ='
+    expr = expr[:-1]  # Убираем знак "="
+
+    # Проверяем, что в выражении только допустимые символы: цифры, + - * / ( ), пробелы
+    if not re.fullmatch(r'[0-9+\-*/(). ]+', expr):
+        return 'Ошибка: Недопустимые символы в выражении'
+
+    try:
+        result = eval(expr)
+    except ZeroDivisionError:
+        return 'Ошибка: Деление на ноль'
+    except Exception:
+        return 'Ошибка: Некорректное выражение'
+
+    return f'Результат: {result}'
