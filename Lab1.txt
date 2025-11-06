@@ -1,48 +1,22 @@
-def check_brackets(expression):
+# Пункт 1: В строке будут скобки только одного типа: или "()" , или "{}", или "[]"
+# Пункт 2: В строке будут все три вида скобок
+# Для успешной сдачи лабы оба пункта программа должна выполнять корректно (можно сделать отдельные программы на каждый пункт)
+
+# Пример входа:
+# ()[({}())]
+
+def bracketcheck(string):
+    brackets = {")": "(", "]": "[", "}": "{"}
     stack = []
-    pairs = {')': '(', '}': '{', ']': '['}
-
-    for char in expression:
-        if char in ['(', '{', '[']:
-            stack.append(char)
-        elif char in [')', '}', ']']:
-            if not stack or stack[-1] != pairs[char]:
+    for i in string:
+        if i in brackets.values():
+            stack.append(i)
+        elif i in brackets.keys():
+            if stack == [] or brackets[i] != stack.pop():
                 return False
-            stack.pop()
-        else:
-            return False
-    return len(stack) == 0
+    return True if not stack else False
 
-def check_single_type_brackets(expression):
-    if not expression:
-        return False
-    open_bracket = expression[0]
-    if open_bracket in '()':
-        valid_chars = '()'
-    elif open_bracket in '{}':
-        valid_chars = '{}'
-    elif open_bracket in '[]':
-        valid_chars = '[]'
-    else:
-        return False
 
-    for ch in expression:
-        if ch not in valid_chars:
-            return False
-
-    return check_brackets(expression)
-
-expression = input('Введите строку: ')
-if any(ch not in '(){}[]' for ch in expression):
-    print('Строка не существует')
-else:
-    if (len(set(expression) - set('()')) == 0) or (len(set(expression) - set('{}')) == 0) or (len(set(expression) - set('[]')) == 0):
-        if check_single_type_brackets(expression):
-            print('Строка существует')
-        else:
-            print('Строка не существует')
-    else:
-        if check_brackets(expression):
-            print('Строка существует')
-        else:
-            print('Строка не существует')
+if __name__ == "__main__":
+    brackettest = input("Введите строку: ")
+    print(f"Строка{' не' if not bracketcheck(brackettest) else ''} существует")

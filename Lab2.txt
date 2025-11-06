@@ -1,34 +1,121 @@
-import re
+# На вход подаётся математическое выражение. Элементы - числа.
+# Операции - "+ - * /".
+# Также есть скобочки. Окончанием выражения служит "=".
+# Программа должна вывести результат выражения
+# Пример ввода:
+# 2+7*(3/9)-5=
 
-def check_round_brackets(expression):
+
+operator_list = ["*", "/", "+", "-"]
+digit_list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+def bracketcheck(string):
+    brackets = {")": "(", "]": "[", "}": "{"}
     stack = []
-    for char in expression:
-        if char == '(':
-            stack.append(char)
-        elif char == ')':
-            if not stack:
+    for i in string:
+        if i in brackets.values():
+            stack.append(i)
+        elif i in brackets.keys():
+            if stack == [] or brackets[i] != stack.pop():
                 return False
-            stack.pop()
-    return len(stack) == 0
+    return True if not stack else False
 
-def evaluate_expression(expr):
-    # Проверка круглых скобок
-    if not check_round_brackets(expr):
-        return 'Ошибка: Скобки расставлены неверно'
+def precedence(op):
+    if op in ("+", "-"):
+        return 1
+    elif op in ("*", "/"):
+        return 2
+    return 0
 
-    if not expr.endswith('='):
-        return 'Ошибка: Выражение должно оканчиваться на ='
-    expr = expr[:-1]  # Убираем знак "="
+def sum_op(operands):
+    return float(operands[0]) + float(operands[1])
 
-    # Проверяем, что в выражении только допустимые символы: цифры, + - * / ( ), пробелы
-    if not re.fullmatch(r'[0-9+\-*/(). ]+', expr):
-        return 'Ошибка: Недопустимые символы в выражении'
+def sub_op(operands):
+    return float(operands[0]) - float(operands[1])
 
-    try:
-        result = eval(expr)
-    except ZeroDivisionError:
-        return 'Ошибка: Деление на ноль'
-    except Exception:
-        return 'Ошибка: Некорректное выражение'
+def mult_op(operands):
+    return float(operands[0]) * float(operands[1])
 
-    return f'Результат: {result}'
+def division_op(operands):
+    return float(operands[0]) / float(operands[1])
+
+def RPN(expression):
+    if not bracketcheck(expression):
+        return ["PError"]
+
+    stack = []
+    output = []
+    number_buffer = ""
+
+    while expression:
+        token = expression[0]
+        expression = expression[1:]
+
+        if token in digit_list or token == '.':  # учитываем дробные числа
+            number_buffer += token
+        else:
+            if number_buffer:
+                output.append(number_buffer)
+                number_buffer = ""
+
+            if token in operator_list:
+                while stack and stack[-1] in operator_list and precedence(stack[-1]) >= precedence(token):
+                    output.append(stack.pop())
+                stack.append(token)
+            elif token == "(":
+                stack.append(token)
+            elif token == ")":
+                while stack and stack[-1] != "(":
+                    output.append(stack.pop())
+                stack.pop()  # удалить "("
+            elif token == " ":
+                continue
+            else:
+                # игнорируем другие символы, например пробелы
+                pass
+
+    if number_buffer:
+        output.append(number_buffer)
+
+    while stack:
+        output.append(stack.pop())
+
+    return output
+
+def Calc(expr):
+    rpn_expr = RPN(expr)
+    #print(rpn_expr)
+
+    if rpn_expr[0] == "PError":
+        return "Ошибка в скобках"
+
+    stack = []
+    for token in rpn_expr:
+        try:
+            float(token)
+            stack.append(token)
+        except:
+            if token in operator_list:
+                b = stack.pop()
+                a = stack.pop()
+
+                if token == "+":
+                    stack.append(sum_op([a,b]))
+                elif token == "-":
+                    stack.append(sub_op([a,b]))
+                elif token == "*":
+                    stack.append(mult_op([a,b]))
+                elif token == "/":
+                    if float(b) == 0:
+                        return "Деление на ноль"
+                    stack.append(division_op([a,b]))
+
+    return stack[0]
+
+if __name__ == "__main__":
+    expression = input("Введите выражение (заканчивается '='): ")
+    if expression.endswith("="):
+        expression = expression[:-1]
+
+    result = Calc(expression)
+    print(f"{expression} = {result}")

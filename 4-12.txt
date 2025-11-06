@@ -1,0 +1,197 @@
+"""
+Здесь будут сортировки: 
+№4 Сортировка методом прочесывания (comb_sort)
+№5 Вставками (insert_sort)
+№6 Посредством выбора (sel_sort)
+№7 Шелла (shell_sort)
+№8 Поразрядная (radix_sort)
+№9 Пирамидальная (heap_sort)
+№10 Слиянием
+№11 Быстрая
+№12 Внешняя многофазная
+"""
+import random
+import time
+
+def comb_sort(ls):
+    """
+    Сортировка методом прочесывания (Comb Sort).
+    Алгоритм основан на пузырьковой сортировке, но с уменьшением шага проверки элементов.
+    """
+    n = len(ls)
+    step = n  # Начальный шаг (равен длине списка)
+    flag = True  # Флаг для отслеживания перестановок
+    while step > 1 or flag:
+        if step > 1:
+            step = int(step / 1.25)  # Уменьшаем шаг
+        flag = False
+        for i in range(n - step):
+            if ls[i] > ls[i + step]:
+                ls[i], ls[i + step] = ls[i + step], ls[i]
+                flag = True
+    return ls
+
+def insert_sort(ls):
+    """
+    Сортировка вставками (Insertion Sort).
+    Элементы сравниваются с предыдущими и вставляются на нужную позицию.
+    """
+    for j in range(1, len(ls)):
+        key = ls[j]
+        i = j - 1
+        while i >= 0 and ls[i] > key:
+            ls[i + 1] = ls[i]
+            i -= 1
+        ls[i + 1] = key
+    return ls
+
+def sel_sort(ls):
+    """
+    Сортировка выбором (Selection Sort).
+    Алгоритм ищет минимальный элемент и перемещает его в начало.
+    """
+    for i in range(len(ls) - 1):
+        min_index = i
+        for j in range(i + 1, len(ls)):
+            if ls[j] < ls[min_index]:
+                min_index = j
+        ls[i], ls[min_index] = ls[min_index], ls[i]
+    return ls
+
+def shell_sort(ls):
+    """
+    Сортировка Шелла (Shell Sort).
+    Улучшенный вариант сортировки вставками с использованием переменного шага.
+    """
+    n = len(ls)
+    step = n // 2
+    while step > 0:
+        for i in range(step, n):
+            temp = ls[i]
+            j = i
+            while j >= step and ls[j - step] > temp:
+                ls[j] = ls[j - step]
+                j -= step
+            ls[j] = temp
+        step //= 2
+    return ls
+
+def radix_sort(ls):
+    """
+    Поразрядная сортировка (Radix Sort).
+    Работает с числами, сортируя их по разрядам.
+    """
+    max_num = max(ls)
+    exp = 1
+    while max_num // exp > 0:
+        bins = [[] for _ in range(10)]
+        for num in ls:
+            bins[(num // exp) % 10].append(num)
+        ls = [num for sublist in bins for num in sublist]
+        exp *= 10
+    return ls
+
+def heap_sort(ls):
+    """
+    Пирамидальная сортировка (Heap Sort).
+    Сначала строится двоичная куча (heap), затем элементы извлекаются.
+    """
+
+    def max_heapify(ls, heap_size, root_index):
+        largest = root_index
+        left = 2 * root_index + 1
+        right = 2 * root_index + 2
+
+        if left < heap_size and ls[left] > ls[largest]:
+            largest = left
+        if right < heap_size and ls[right] > ls[largest]:
+            largest = right
+
+        if largest != root_index:
+            ls[root_index], ls[largest] = ls[largest], ls[root_index]
+            max_heapify(ls, heap_size, largest)
+
+    n = len(ls)
+    for i in range(n // 2 - 1, -1, -1):
+        max_heapify(ls, n, i)
+
+    for i in range(n - 1, 0, -1):
+        ls[i], ls[0] = ls[0], ls[i]
+        max_heapify(ls, i, 0)
+    return ls
+
+def merge_sort(ls):
+    """
+    Сортировка слиянием (Merge Sort).
+    Делит список на части, сортирует рекурсивно и объединяет.
+    """
+    if len(ls) <= 1:
+        return ls
+
+    mid = len(ls) // 2
+    left = merge_sort(ls[:mid])
+    right = merge_sort(ls[mid:])
+
+    merged = []
+    i = j = 0
+    while i < len(left) and j < len(right):
+        if left[i] < right[j]:
+            merged.append(left[i])
+            i += 1
+        else:
+            merged.append(right[j])
+            j += 1
+    merged.extend(left[i:])
+    merged.extend(right[j:])
+    return merged
+
+def quicksort(ls):
+    """
+    Быстрая сортировка (Quick Sort).
+    Рекурсивно делит список на меньшие и большие элементы относительно опорного.
+    """
+    if len(ls) <= 1:
+        return ls
+    pivot = ls[len(ls) // 2]
+    left = [x for x in ls if x < pivot]
+    middle = [x for x in ls if x == pivot]
+    right = [x for x in ls if x > pivot]
+    return quicksort(left) + middle + quicksort(right)
+
+class Timer:
+    def __init__(self):
+        self.start_time = None
+        self.end_time = None
+    def start(self):
+        self.start_time = time.time()
+    def stop(self):
+        self.end_time = time.time()
+    def elapsed(self):
+        return self.end_time - self.start_time
+
+# Для проверки сортировок
+large_list = [random.randint(1, 100000) for _ in range(10000)]
+sort_funcs = [
+    comb_sort,
+    insert_sort,
+    sel_sort,
+    shell_sort,
+    radix_sort,
+    heap_sort,
+    merge_sort,
+    quicksort,
+]
+
+def check_sort(ls, sort_func):
+    t = Timer()
+    t.start()
+    newlist = sort_func(ls.copy())
+    t.stop()
+    print(f"{sort_func.__name__} завершена за {t.elapsed():.4f} секунд")
+    return newlist
+
+if __name__ == "__main__":
+    for sort_func in sort_funcs:
+        sorted_list = check_sort(large_list, sort_func)
+        print(f"{sort_func.__name__} первые 10 элементов: {sorted_list[:10]} ... последние 10 элементов: {sorted_list[-10:]}\n")
+    print(f"Исходный список (первые 10): {large_list[:10]} ... последние 10 элементов: {large_list[-10:]}")
